@@ -12,6 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   await loadSentenceContent();
+  for(final lang in names.keys){final items=jsonDecode(prefs.getString('personal:$lang')??'[]') as List;final seen=decks[lang]!.map((w)=>w.term).toSet();for(final row in items){if(seen.add(row['term'] as String))decks[lang]!.add(Word(row['term'] as String,row['meaning'] as String,row['example'] as String));}}
   runApp(Lango(prefs: prefs));
 }
 
@@ -47,6 +48,12 @@ class _StudyState extends State<Study> {
   double speed=0.42;
     String mode='cards';
   int correct=0, attempted=0;
+  late int dailyGoal=widget.prefs.getInt('dailyGoal')??20;
+  String get today=>DateTime.now().toLocal().toIso8601String().substring(0,10);
+  int get todayReviews=>widget.prefs.getInt('reviews:$today')??0;
+  Future<void> settings() async {await showModalBottomSheet<void>(context:context,builder:(ctx)=>StatefulBuilder(builder:(ctx,update)=>SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(mainAxisSize:MainAxisSize.min,children:[const Text('تنظیمات یادگیری'),ListTile(title:const Text('هدف روزانه'),trailing:Text('$dailyGoal کارت')),Slider(value:dailyGoal.toDouble(),min:5,max:50,divisions:9,onChanged:(v){setState(()=>dailyGoal=v.round());update((){});widget.prefs.setInt('dailyGoal',dailyGoal);}),ListTile(title:const Text('لهجه'),trailing:DropdownButton<String>(value:accent,items:accents[language]!.map((a)=>DropdownMenuItem(value:a,child:Text(a))).toList(),onChanged:(v){if(v==null)return;setState(()=>accent=v);update((){});widget.prefs.setString('accent:$language',v);})),ListTile(title:const Text('تم روشن / تاریک'),trailing:IconButton(onPressed:widget.onTheme,icon:const Icon(Icons.brightness_6))) ])))));}
+  Future<void> addCard() async {final term=TextEditingController(),meaning=TextEditingController(),example=TextEditingController();final lang=language;final result=await showDialog<Word>(context:context,builder:(ctx)=>AlertDialog(title:const Text('فلش‌کارت شخصی'),content:SingleChildScrollView(child:Column(mainAxisSize:MainAxisSize.min,children:[TextField(controller:term,decoration:const InputDecoration(labelText:'واژه یا جمله')),TextField(controller:meaning,decoration:const InputDecoration(labelText:'معنی فارسی')),TextField(controller:example,decoration:const InputDecoration(labelText:'مثال (اختیاری)'))])),actions:[TextButton(onPressed:()=>Navigator.pop(ctx),child:const Text('انصراف')),FilledButton(onPressed:(){if(term.text.trim().isEmpty||meaning.text.trim().isEmpty)return;Navigator.pop(ctx,Word(term.text.trim(),meaning.text.trim(),example.text.trim()));},child:const Text('ذخیره'))]));if(result==null||!mounted)return;if(decks[lang]!.any((w)=>w.term==result.term)){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('این واژه قبلاً ثبت شده است.')));return;}final items=List<dynamic>.from(jsonDecode(widget.prefs.getString('personal:$lang')??'[]'));items.add({'term':result.term,'meaning':result.meaning,'example':result.example});await widget.prefs.setString('personal:$lang',jsonEncode(items));if(mounted)setState(()=>decks[lang]!.add(result));}
+
   List<Word> choices=[];
   late Set<String> mistakes=(widget.prefs.getStringList('mistakes')??[]).toSet();
   late int totalAnswers=widget.prefs.getInt('answers')??0;
@@ -83,6 +90,8 @@ class _StudyState extends State<Study> {
       index=0;flipped=false;feedback=null;answer.clear();
     });
     await widget.prefs.setString('progress',jsonEncode(progress));
+    await widget.prefs.setInt('reviews:$today',todayReviews+1);
+    if(mounted)setState((){});
   }
   @override void dispose(){tts.stop();answer.dispose();super.dispose();}
   @override Widget build(BuildContext context){
@@ -90,7 +99,7 @@ class _StudyState extends State<Study> {
     final word=queue.isEmpty?null:queue[index%queue.length];
     final colors=Theme.of(context).colorScheme;
     return Scaffold(
-      appBar:AppBar(title:const Text('Lango',style:TextStyle(fontWeight:FontWeight.w900)),actions:[IconButton(onPressed:widget.onTheme,icon:Icon(widget.dark?Icons.light_mode:Icons.dark_mode))]),
+      appBar:AppBar(title:const Text('Lango',style:TextStyle(fontWeight:FontWeight.w900)),actions:[IconButton(onPressed:settings,icon:const Icon(Icons.settings_outlined))]),
       bottomNavigationBar:NavigationBar(selectedIndex:tab,onDestinationSelected:(i)=>setState((){tab=i;mode='cards';reset();}),destinations:const [
         NavigationDestination(icon:Icon(Icons.home_outlined),label:'خانه'),
         NavigationDestination(icon:Icon(Icons.style_outlined),label:'یادگیری'),
@@ -109,6 +118,8 @@ class _StudyState extends State<Study> {
             FilledButton(onPressed:()=>openMode('cards'),child:const Text('شروع یادگیری'))
           ])))),
           const SizedBox(height:12),
+          Card(child:Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('هدف امروز: $todayReviews از $dailyGoal'),const SizedBox(height:8),LinearProgressIndicator(value:(todayReviews/dailyGoal).clamp(0.0,1.0).toDouble())]))),
+          const SizedBox(height:12),
           const Text('تمرین مهارت‌ها',style:TextStyle(fontSize:20,fontWeight:FontWeight.bold)),
           const SizedBox(height:10),
           GridView.count(crossAxisCount:2,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),childAspectRatio:1.55,children:[
@@ -120,6 +131,7 @@ class _StudyState extends State<Study> {
           const SizedBox(height:16),
           Card(child:ListTile(title:const Text('کلمه روز'),subtitle:Text(decks[language]![DateTime.now().difference(DateTime(2020)).inDays%decks[language]!.length].term),trailing:IconButton(icon:const Icon(Icons.volume_up),onPressed:()=>speak(decks[language]![DateTime.now().difference(DateTime(2020)).inDays%decks[language]!.length].term)))),
         ] else if(tab==2)...[
+          OutlinedButton.icon(onPressed:addCard,icon:const Icon(Icons.add),label:const Text('فلش‌کارت شخصی')),
           TextField(onChanged:(v)=>setState(()=>search=v),decoration:const InputDecoration(prefixIcon:Icon(Icons.search),hintText:'جستجوی کلمه یا معنی',border:OutlineInputBorder())),
           SwitchListTile(title:const Text('فقط علاقه‌مندی‌ها'),value:onlyFavorites,onChanged:(v)=>setState(()=>onlyFavorites=v)),
           for(final w in decks[language]!.where((w)=>(!onlyFavorites||favorites.contains('$language:${w.term}'))&&(w.term.toLowerCase().contains(search.toLowerCase())||w.meaning.contains(search))))
