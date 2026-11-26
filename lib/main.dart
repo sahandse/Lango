@@ -1,5 +1,6 @@
 import 'vocabulary.dart';
 import 'games.dart';
+import 'lango_theme.dart';
 import 'fsrs_review.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -28,8 +29,8 @@ class _LangoState extends State<Lango> {
     title:'Lango', debugShowCheckedModeBanner:false,
     locale:const Locale('fa'), supportedLocales:const [Locale('fa'),Locale('en')],
     localizationsDelegates:GlobalMaterialLocalizations.delegates,
-    theme:ThemeData(colorSchemeSeed:const Color(0xff7051ed),useMaterial3:true,brightness:Brightness.light),
-    darkTheme:ThemeData(colorSchemeSeed:const Color(0xff7051ed),useMaterial3:true,brightness:Brightness.dark),
+    theme:langoTheme(Brightness.light),
+    darkTheme:langoTheme(Brightness.dark),
     themeMode:dark?ThemeMode.dark:ThemeMode.light,
     home:Study(prefs:widget.prefs,dark:dark,onTheme:() {setState(()=>dark=!dark);widget.prefs.setBool('dark',dark);}),
   );
@@ -109,12 +110,12 @@ class _StudyState extends State<Study> {
       ]),
       body:SafeArea(child:Center(child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:620),child:ListView(padding:const EdgeInsets.all(24),children:[
         DropdownButtonFormField<String>(value:language,decoration:const InputDecoration(labelText:'زبان یادگیری',border:OutlineInputBorder()),items:names.entries.map((e)=>DropdownMenuItem(value:e.key,child:Text(e.value))).toList(),onChanged:(v){if(v==null)return;setState((){language=v;accent=accents[v]!.contains(widget.prefs.getString('accent:$v'))?widget.prefs.getString('accent:$v')!:accents[v]!.first;reset();});widget.prefs.setString('language',v);}),
-        const SizedBox(height:24),
+        const SizedBox(height:20),
         if(tab==0)...[
           const Text('هر کلمه، یک دنیای جدید',style:TextStyle(fontSize:28,fontWeight:FontWeight.bold)),
           const SizedBox(height:12),
           Card(clipBehavior:Clip.antiAlias,child:Container(decoration:const BoxDecoration(gradient:LinearGradient(colors:[Color(0xff7045ed),Color(0xff345fdb)])),child:Padding(padding:const EdgeInsets.all(24),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-            const Icon(Icons.auto_awesome,color:Colors.white,size:36),const SizedBox(height:16),Text('${queue.length} کارت آماده مرور',style:const TextStyle(fontSize:26,fontWeight:FontWeight.bold,color:Colors.white)),
+            const Icon(Icons.layers_rounded,color:Colors.white,size:44),const SizedBox(height:16),Text('${queue.length} کارت آماده مرور',style:const TextStyle(fontSize:26,fontWeight:FontWeight.bold,color:Colors.white)),
             const SizedBox(height:16),
             FilledButton(onPressed:()=>openMode('cards'),child:const Text('شروع یادگیری'))
           ])))),
