@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'package:flutter/services.dart';
+
 class Word {
   final String term, meaning, example;
-  const Word(this.term, this.meaning, this.example);
+  final String? attribution;
+  const Word(this.term, this.meaning, this.example,{this.attribution});
 }
 
 const baseDecks = <String, List<Word>>{
@@ -91,3 +95,18 @@ Word("Mutlu","خوشحال","Mutluyum."),
 Word("Hoşça kal","خداحافظ","Hoşça kal, görüşürüz."),
 Word("Yardım","کمک","Yardıma ihtiyacım var.")],
 };
+
+Future<void> loadSentenceContent() async {
+  final data=jsonDecode(await rootBundle.loadString('assets/content/sentences.json')) as Map<String,dynamic>;
+  for(final entry in data.entries){
+    final deck=decks[entry.key];
+    if(deck==null) continue;
+    final known=deck.map((w)=>w.term).toSet();
+    for(final row in entry.value as List){
+      final term=row['term'] as String;
+      if(!known.add(term)) continue;
+      deck.add(Word(term,row['meaning'] as String,term,attribution:
+        'Tatoeba · ${row['author']} (#${row['sourceId']}) / ${row['translator']} (#${row['translationId']}) · CC BY 2.0 FR'));
+    }
+  }
+}
