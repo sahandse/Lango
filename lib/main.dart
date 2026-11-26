@@ -60,9 +60,9 @@ class _StudyState extends State<Study> {
   late int totalCorrect=widget.prefs.getInt('correct')??0;
   void reset(){index=0;flipped=false;feedback=null;answer.clear();choices=[];}
   void openMode(String value){setState((){tab=1;mode=value;reset();});}
-  void checkAnswer(Word w,String value){if(feedback!=null)return;final ok=normalize(value)==normalize(w.term);setState((){feedback=ok?'درست است!':'پاسخ: ${w.term}';attempted++;totalAnswers++;if(ok){correct++;totalCorrect++;mistakes.remove('$language:${w.term}');}else{mistakes.add('$language:${w.term}');}});widget.prefs.setInt('answers',totalAnswers);widget.prefs.setInt('correct',totalCorrect);widget.prefs.setStringList('mistakes',mistakes.toList());HapticFeedback.selectionClick();}
+  void checkAnswer(Word w,String value){if(feedback!=null)return;final ok=normalize(value)==normalize(w.term);setState((){feedback=ok?'درست است!':'پاسخ: ${w.term}';attempted++;totalAnswers++;if(ok){correct++;totalCorrect++;if(mode!='mistakes')mistakes.remove('$language:${w.term}');}else{mistakes.add('$language:${w.term}');}});widget.prefs.setInt('answers',totalAnswers);widget.prefs.setInt('correct',totalCorrect);widget.prefs.setStringList('mistakes',mistakes.toList());HapticFeedback.selectionClick();}
   String normalize(String s)=>s.trim().toLowerCase().replaceAll('’',"'").replaceAll(RegExp(r'^[¿¡]|[.!?]+$'),'');
-  void advance(){setState((){index++;answer.clear();feedback=null;choices=[];});}
+  void advance(){setState((){if(mode=='mistakes'&&feedback=='درست است!'&&mistakes.isNotEmpty){final list=decks[language]!.where((w)=>mistakes.contains('$language:${w.term}')).toList();if(list.isNotEmpty)mistakes.remove('$language:${list[index%list.length].term}');}else{index++;}answer.clear();feedback=null;choices=[];});widget.prefs.setStringList('mistakes',mistakes.toList());}
   List<Word> options(Word w){if(choices.isEmpty){final others=decks[language]!.where((x)=>x.term!=w.term&&x.meaning!=w.meaning).toList()..shuffle(Random());choices=[w,...others.take(3)]..shuffle(Random());}return choices;}
   Widget skill(String label,IconData icon,String value)=>Card(child:InkWell(borderRadius:BorderRadius.circular(16),onTap:()=>openMode(value),child:Padding(padding:const EdgeInsets.all(12),child:Column(mainAxisSize:MainAxisSize.min,children:[Icon(icon,size:26,color:Theme.of(context).colorScheme.primary),const SizedBox(height:8),Text(label)]))));
   late Map<String,dynamic> progress=Map<String,dynamic>.from(jsonDecode(widget.prefs.getString('progress')??'{}'));
@@ -122,7 +122,7 @@ class _StudyState extends State<Study> {
           const SizedBox(height:12),
           const Text('تمرین مهارت‌ها',style:TextStyle(fontSize:20,fontWeight:FontWeight.bold)),
           const SizedBox(height:10),
-          GridView.count(crossAxisCount:2,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),childAspectRatio:1.55,children:[
+          GridView.count(crossAxisCount:2,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),childAspectRatio:1.15,children:[
             skill('نوشتاری',Icons.edit_outlined,'writing'),
             skill('شنیداری',Icons.headphones,'listening'),
             skill('چهارگزینه‌ای',Icons.extension_outlined,'quiz'),
@@ -135,7 +135,7 @@ class _StudyState extends State<Study> {
           TextField(onChanged:(v)=>setState(()=>search=v),decoration:const InputDecoration(prefixIcon:Icon(Icons.search),hintText:'جستجوی کلمه یا معنی',border:OutlineInputBorder())),
           SwitchListTile(title:const Text('فقط علاقه‌مندی‌ها'),value:onlyFavorites,onChanged:(v)=>setState(()=>onlyFavorites=v)),
           for(final w in decks[language]!.where((w)=>(!onlyFavorites||favorites.contains('$language:${w.term}'))&&(w.term.toLowerCase().contains(search.toLowerCase())||w.meaning.contains(search))))
-            Card(child:ListTile(title:Text(w.term,textDirection:TextDirection.ltr),subtitle:Text(w.meaning),leading:IconButton(onPressed:()=>speak(w.term),icon:const Icon(Icons.volume_up)),trailing:IconButton(onPressed:()=>toggleFavorite(w),icon:Icon(favorites.contains('$language:${w.term}')?Icons.favorite:Icons.favorite_border)),onTap:()=>showModalBottomSheet(context:context,builder:(ctx)=>SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(mainAxisSize:MainAxisSize.min,children:[Text(w.term,style:const TextStyle(fontSize:30,fontWeight:FontWeight.bold)),Text(w.meaning),const SizedBox(height:16),if(w.example.isNotEmpty) Text(w.example,textDirection:TextDirection.ltr),if(w.example.isNotEmpty) TextButton(onPressed:()=>speak(w.example),child:const Text('شنیدن مثال'))]))))))
+            Card(child:ListTile(title:Text(w.term,textDirection:TextDirection.ltr),subtitle:Text(w.meaning),leading:IconButton(onPressed:()=>speak(w.term),icon:const Icon(Icons.volume_up)),trailing:IconButton(onPressed:()=>toggleFavorite(w),icon:Icon(favorites.contains('$language:${w.term}')?Icons.favorite:Icons.favorite_border)),onTap:()=>showModalBottomSheet(context:context,builder:(ctx)=>SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(mainAxisSize:MainAxisSize.min,children:[Text(w.term,style:const TextStyle(fontSize:30,fontWeight:FontWeight.bold)),Text(w.meaning),const SizedBox(height:16),if(w.example.isNotEmpty) Text(w.example,textDirection:TextDirection.ltr),if(w.example.isNotEmpty) TextButton(onPressed:()=>speak(w.example),child:const Text('شنیدن مثال')),if(w.attribution!=null) Text(w.attribution!,style:Theme.of(context).textTheme.bodySmall)]))))))
         ] else if(tab==3)...[
           const Text('پیشرفت یادگیری',style:TextStyle(fontSize:26,fontWeight:FontWeight.bold)),
           Card(child:ListTile(title:Text('پاسخ صحیح: $totalCorrect از $totalAnswers'),subtitle:LinearProgressIndicator(value:totalAnswers==0?0:totalCorrect/totalAnswers))),
@@ -149,7 +149,7 @@ class _StudyState extends State<Study> {
           const SizedBox(height:12),
           if(mode=='cards')...[
             GestureDetector(onTap:()=>setState(()=>flipped=!flipped),child:AnimatedSwitcher(duration:const Duration(milliseconds:220),child:Card(key:ValueKey(flipped),color:colors.primaryContainer,child:Container(height:260,width:double.infinity,padding:const EdgeInsets.all(20),child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
-              Text(flipped?word.meaning:word.term,textAlign:TextAlign.center,style:const TextStyle(fontSize:36,fontWeight:FontWeight.bold)),
+              Flexible(child:SingleChildScrollView(child:Text(flipped?word.meaning:word.term,textAlign:TextAlign.center,style:const TextStyle(fontSize:32,fontWeight:FontWeight.bold)))),
               if(flipped && word.example.isNotEmpty) Padding(padding:const EdgeInsets.only(top:16),child:Text(word.example,textDirection:TextDirection.ltr,textAlign:TextAlign.center)),
               const SizedBox(height:20),const Text('برای چرخاندن لمس کنید')
             ]))))),
