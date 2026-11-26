@@ -11,9 +11,10 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-      - run: flutter create --platforms=android,web .
+      - run: flutter create --platforms=android,web --project-name lango --org ir.lango .
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos
+      - run: flutter test
       - run: flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
