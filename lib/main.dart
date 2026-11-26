@@ -1,4 +1,5 @@
 import 'vocabulary.dart';
+import 'games.dart';
 import 'fsrs_review.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -129,6 +130,7 @@ class _StudyState extends State<Study> {
             skill('تلفظ و تکرار',Icons.record_voice_over_outlined,'voice'),
           ]),
           const SizedBox(height:16),
+          Card(child:ListTile(leading:const Icon(Icons.sports_esports_outlined),title:const Text('Lango Games'),subtitle:const Text('تطبیق واژه و جمله‌سازی'),trailing:const Icon(Icons.chevron_left),onTap:() async {await Navigator.push(context,MaterialPageRoute<void>(builder:(_)=>GamesPage(words:decks[language]!,prefs:widget.prefs,language:language)));if(mounted)setState((){});})),
           Card(child:ListTile(title:const Text('کلمه روز'),subtitle:Text(decks[language]![DateTime.now().difference(DateTime(2020)).inDays%decks[language]!.length].term),trailing:IconButton(icon:const Icon(Icons.volume_up),onPressed:()=>speak(decks[language]![DateTime.now().difference(DateTime(2020)).inDays%decks[language]!.length].term)))),
         ] else if(tab==2)...[
           OutlinedButton.icon(onPressed:addCard,icon:const Icon(Icons.add),label:const Text('فلش‌کارت شخصی')),
@@ -138,6 +140,7 @@ class _StudyState extends State<Study> {
             Card(child:ListTile(title:Text(w.term,textDirection:TextDirection.ltr),subtitle:Text(w.meaning),leading:IconButton(onPressed:()=>speak(w.term),icon:const Icon(Icons.volume_up)),trailing:IconButton(onPressed:()=>toggleFavorite(w),icon:Icon(favorites.contains('$language:${w.term}')?Icons.favorite:Icons.favorite_border)),onTap:()=>showModalBottomSheet(context:context,builder:(ctx)=>SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(mainAxisSize:MainAxisSize.min,children:[Text(w.term,style:const TextStyle(fontSize:30,fontWeight:FontWeight.bold)),Text(w.meaning),const SizedBox(height:16),if(w.example.isNotEmpty) Text(w.example,textDirection:TextDirection.ltr),if(w.example.isNotEmpty) TextButton(onPressed:()=>speak(w.example),child:const Text('شنیدن مثال')),if(w.attribution!=null) Text(w.attribution!,style:Theme.of(context).textTheme.bodySmall)]))))))
         ] else if(tab==3)...[
           const Text('پیشرفت یادگیری',style:TextStyle(fontSize:26,fontWeight:FontWeight.bold)),
+          Card(child:ListTile(leading:const Icon(Icons.sports_esports_outlined),title:const Text('نتایج بازی آموزشی'),subtitle:Text('${widget.prefs.getInt("games:$language:correct")??0} پاسخ صحیح از ${widget.prefs.getInt("games:$language:attempts")??0}'))),
           Card(child:ListTile(title:Text('پاسخ صحیح: $totalCorrect از $totalAnswers'),subtitle:LinearProgressIndicator(value:totalAnswers==0?0:totalCorrect/totalAnswers))),
           OutlinedButton.icon(onPressed:()=>openMode('mistakes'),icon:const Icon(Icons.history),label:Text('دفترچه اشتباهات (${mistakes.length})')),
           const SizedBox(height:16),
