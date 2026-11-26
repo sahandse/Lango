@@ -1,3 +1,5 @@
+import 'vocabulary.dart';
+import 'review.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -9,21 +11,6 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   runApp(Lango(prefs: prefs));
 }
-
-class Word {
-  final String term, meaning, example;
-  const Word(this.term, this.meaning, this.example);
-}
-
-const decks = <String, List<Word>>{
-  'en': [Word('Hello','سلام','Hello, how are you?'), Word('Thank you','متشکرم','Thank you for your help.'), Word('Water','آب','I drink water.'), Word('Book','کتاب','This is my book.'), Word('Friend','دوست','She is my friend.')],
-  'de': [Word('Hallo','سلام','Hallo, wie geht es dir?'), Word('Danke','متشکرم','Danke für deine Hilfe.'), Word('Wasser','آب','Ich trinke Wasser.'), Word('Buch','کتاب','Das ist mein Buch.')],
-  'fr': [Word('Bonjour','سلام','Bonjour, comment ça va ?'), Word('Merci','متشکرم','Merci pour votre aide.'), Word('Eau','آب','Je bois de l’eau.'), Word('Livre','کتاب','Voici mon livre.')],
-  'es': [Word('Hola','سلام','Hola, ¿cómo estás?'), Word('Gracias','متشکرم','Gracias por tu ayuda.'), Word('Agua','آب','Bebo agua.'), Word('Libro','کتاب','Este es mi libro.')],
-  'tr': [Word('Merhaba','سلام','Merhaba, nasılsın?'), Word('Teşekkürler','متشکرم','Yardımın için teşekkürler.'), Word('Su','آب','Su içiyorum.'), Word('Kitap','کتاب','Bu benim kitabım.')]
-};
-const names = {'en':'English','de':'Deutsch','fr':'Français','es':'Español','tr':'Türkçe'};
-const accents = {'en':['en-US','en-GB','en-AU'],'de':['de-DE','de-AT'],'fr':['fr-FR','fr-CA'],'es':['es-ES','es-MX'],'tr':['tr-TR']};
 
 class Lango extends StatefulWidget {
   final SharedPreferences prefs;
@@ -53,7 +40,9 @@ class _StudyState extends State<Study> {
   final tts=FlutterTts();
   final answer=TextEditingController();
   late String language=widget.prefs.getString('language')??'en';
-  late String accent=accents[language]!.first;
+  late String accent=accents[language]!.contains(widget.prefs.getString('accent:$language')) ? widget.prefs.getString('accent:$language')! : accents[language]!.first;
+  double speed=0.42;
+  bool listening=false;
   late Map<String,dynamic> progress=Map<String,dynamic>.from(jsonDecode(widget.prefs.getString('progress')??'{}'));
   int tab=0, index=0;
   bool flipped=false;
@@ -63,33 +52,34 @@ class _StudyState extends State<Study> {
     try {
       final available=await tts.isLanguageAvailable(accent);
       if(available!=true) throw StateError('voice unavailable');
-      await tts.setLanguage(accent); await tts.setSpeechRate(0.42); await tts.speak(value);
+      await tts.setLanguage(accent); await tts.setSpeechRate(speed); await tts.speak(value);
     } catch (_) {if(mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('صدای این زبان در دستگاه موجود نیست.')));}
   }
   Future<void> rate(Word word,int days) async {
     final key='$language:${word.term}';
     final old=progress[key]?['reviews']??0;
+    final interval=nextInterval(progress[key]?['interval']??0,days);
     setState(() {
-      progress[key]={'reviews':old+1,'due':DateTime.now().add(Duration(days:days,minutes:days==0?1:0)).millisecondsSinceEpoch};
+      progress[key]={'reviews':old+1,'interval':interval,'due':DateTime.now().add(Duration(days:interval,minutes:interval==0?10:0)).millisecondsSinceEpoch};
       index=0;flipped=false;feedback=null;answer.clear();
     });
     await widget.prefs.setString('progress',jsonEncode(progress));
   }
   @override void dispose(){tts.stop();answer.dispose();super.dispose();}
   @override Widget build(BuildContext context){
-    final queue=due;
+    final queue=tab==2?decks[language]!:due;
     final word=queue.isEmpty?null:queue[index%queue.length];
     final colors=Theme.of(context).colorScheme;
     return Scaffold(
       appBar:AppBar(title:const Text('Lango',style:TextStyle(fontWeight:FontWeight.w900)),actions:[IconButton(onPressed:widget.onTheme,icon:Icon(widget.dark?Icons.light_mode:Icons.dark_mode))]),
-      bottomNavigationBar:NavigationBar(selectedIndex:tab,onDestinationSelected:(i)=>setState((){tab=i;flipped=false;feedback=null;answer.clear();}),destinations:const [
+      bottomNavigationBar:NavigationBar(selectedIndex:tab,onDestinationSelected:(i)=>setState((){tab=i;listening=false;flipped=false;feedback=null;answer.clear();}),destinations:const [
         NavigationDestination(icon:Icon(Icons.home_outlined),label:'خانه'),
         NavigationDestination(icon:Icon(Icons.style_outlined),label:'کارت‌ها'),
         NavigationDestination(icon:Icon(Icons.edit_outlined),label:'نوشتاری'),
         NavigationDestination(icon:Icon(Icons.insights_outlined),label:'پیشرفت')
       ]),
       body:SafeArea(child:Center(child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:620),child:ListView(padding:const EdgeInsets.all(24),children:[
-        DropdownButtonFormField<String>(value:language,decoration:const InputDecoration(labelText:'زبان یادگیری',border:OutlineInputBorder()),items:names.entries.map((e)=>DropdownMenuItem(value:e.key,child:Text(e.value))).toList(),onChanged:(v){if(v==null)return;setState((){language=v;accent=accents[v]!.first;index=0;flipped=false;feedback=null;answer.clear();});widget.prefs.setString('language',v);}),
+        DropdownButtonFormField<String>(value:language,decoration:const InputDecoration(labelText:'زبان یادگیری',border:OutlineInputBorder()),items:names.entries.map((e)=>DropdownMenuItem(value:e.key,child:Text(e.value))).toList(),onChanged:(v){if(v==null)return;setState((){language=v;accent=accents[v]!.contains(widget.prefs.getString('accent:$v'))?widget.prefs.getString('accent:$v')!:accents[v]!.first;index=0;flipped=false;feedback=null;answer.clear();});widget.prefs.setString('language',v);}),
         const SizedBox(height:24),
         if(tab==0)...[
           const Text('هر کلمه، یک دنیای جدید',style:TextStyle(fontSize:28,fontWeight:FontWeight.bold)),
@@ -100,7 +90,8 @@ class _StudyState extends State<Study> {
             FilledButton(onPressed:()=>setState(()=>tab=1),child:const Text('شروع یادگیری'))
           ]))),
           const SizedBox(height:12),
-          OutlinedButton.icon(onPressed:()=>setState(()=>tab=2),icon:const Icon(Icons.edit),label:const Text('تمرین نوشتاری'))
+          OutlinedButton.icon(onPressed:()=>setState((){tab=2;listening=false;}),icon:const Icon(Icons.edit),label:const Text('تمرین نوشتاری')),
+          OutlinedButton.icon(onPressed:()=>setState((){tab=2;listening=true;}),icon:const Icon(Icons.headphones),label:const Text('تمرین شنیداری'))
         ] else if(tab==3)...[
           const Text('پیشرفت یادگیری',style:TextStyle(fontSize:26,fontWeight:FontWeight.bold)),
           const SizedBox(height:16),
@@ -117,11 +108,13 @@ class _StudyState extends State<Study> {
               const SizedBox(height:20),const Text('برای چرخاندن لمس کنید')
             ]))))),
             const SizedBox(height:12),
-            DropdownButton<String>(value:accent,items:accents[language]!.map((a)=>DropdownMenuItem(value:a,child:Text(a))).toList(),onChanged:(v)=>setState(()=>accent=v!)),
+            DropdownButton<String>(value:accent,items:accents[language]!.map((a)=>DropdownMenuItem(value:a,child:Text(a))).toList(),onChanged:(v){if(v==null)return;setState(()=>accent=v);widget.prefs.setString('accent:$language',v);}),
             OutlinedButton.icon(onPressed:()=>speak(word.term),icon:const Icon(Icons.volume_up),label:const Text('تلفظ')),
+            Row(children:[const Icon(Icons.speed),Expanded(child:Slider(value:speed,min:0.25,max:0.65,onChanged:(v)=>setState(()=>speed=v)))]),
+            if(flipped) OutlinedButton.icon(onPressed:()=>speak(word.example),icon:const Icon(Icons.record_voice_over),label:const Text('شنیدن مثال')),
             if(flipped) Wrap(spacing:8,runSpacing:8,children:[for(final item in const [('دوباره',0),('سخت',1),('خوب',3),('آسان',7)]) FilledButton.tonal(onPressed:()=>rate(word,item.$2),child:Text(item.$1))])
           ] else ...[
-            Text(word.meaning,style:const TextStyle(fontSize:32,fontWeight:FontWeight.bold)),
+            if(listening) FilledButton.icon(onPressed:()=>speak(word.term),icon:const Icon(Icons.headphones),label:const Text('گوش کن و بنویس')) else Text(word.meaning,style:const TextStyle(fontSize:32,fontWeight:FontWeight.bold)),
             const SizedBox(height:16),
             TextField(controller:answer,textDirection:TextDirection.ltr,decoration:const InputDecoration(labelText:'کلمه را بنویسید',border:OutlineInputBorder())),
             const SizedBox(height:12),
