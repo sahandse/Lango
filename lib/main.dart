@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'vocabulary.dart';
 import 'games.dart';
 import 'lango_theme.dart';
@@ -10,17 +11,19 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/services.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   await loadSentenceContent();
   for(final lang in names.keys){final items=jsonDecode(prefs.getString('personal:$lang')??'[]') as List;final seen=decks[lang]!.map((w)=>w.term).toSet();for(final row in items){if(seen.add(row['term'] as String))decks[lang]!.add(Word(row['term'] as String,row['meaning'] as String,row['example'] as String));}}
-  runApp(Lango(prefs: prefs));
+  final logo=base64Decode((await rootBundle.loadString('assets/brand/logo.webp.b64')).trim());
+  runApp(Lango(prefs: prefs,logo:logo));
 }
 
 class Lango extends StatefulWidget {
   final SharedPreferences prefs;
-  const Lango({super.key, required this.prefs});
+  final Uint8List logo;
+  const Lango({super.key, required this.prefs,required this.logo});
   @override State<Lango> createState() => _LangoState();
 }
 class _LangoState extends State<Lango> {
@@ -32,14 +35,15 @@ class _LangoState extends State<Lango> {
     theme:langoTheme(Brightness.light),
     darkTheme:langoTheme(Brightness.dark),
     themeMode:dark?ThemeMode.dark:ThemeMode.light,
-    home:Study(prefs:widget.prefs,dark:dark,onTheme:() {setState(()=>dark=!dark);widget.prefs.setBool('dark',dark);}),
+    home:Study(prefs:widget.prefs,logo:widget.logo,dark:dark,onTheme:() {setState(()=>dark=!dark);widget.prefs.setBool('dark',dark);}),
   );
 }
 class Study extends StatefulWidget {
   final SharedPreferences prefs;
   final bool dark;
   final VoidCallback onTheme;
-  const Study({super.key,required this.prefs,required this.dark,required this.onTheme});
+  final Uint8List logo;
+  const Study({super.key,required this.prefs,required this.dark,required this.onTheme,required this.logo});
   @override State<Study> createState()=>_StudyState();
 }
 class _StudyState extends State<Study> {
@@ -101,7 +105,7 @@ class _StudyState extends State<Study> {
     final word=queue.isEmpty?null:queue[index%queue.length];
     final colors=Theme.of(context).colorScheme;
     return Scaffold(
-      appBar:AppBar(title:const Text('Lango',style:TextStyle(fontWeight:FontWeight.w900)),actions:[IconButton(onPressed:settings,icon:const Icon(Icons.settings_outlined))]),
+      appBar:AppBar(title:Row(mainAxisSize:MainAxisSize.min,children:[ClipRRect(borderRadius:BorderRadius.circular(10),child:Image.memory(widget.logo,width:36,height:36,fit:BoxFit.cover)),const SizedBox(width:10),const Text('Lango',style:TextStyle(fontWeight:FontWeight.w900))]),actions:[IconButton(onPressed:settings,icon:const Icon(Icons.settings_outlined))]),
       bottomNavigationBar:NavigationBar(selectedIndex:tab,onDestinationSelected:(i)=>setState((){tab=i;mode='cards';reset();}),destinations:const [
         NavigationDestination(icon:Icon(Icons.home_outlined),label:'خانه'),
         NavigationDestination(icon:Icon(Icons.style_outlined),label:'یادگیری'),
