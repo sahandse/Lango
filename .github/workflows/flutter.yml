@@ -29,6 +29,8 @@ jobs:
             fi
           done
           rm -rf "$scaffold"
+      - run: python3 -m pip install Pillow
+      - run: python3 tools/apply_brand.py
       - run: flutter --version
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos
