@@ -45,6 +45,10 @@ class _StudyState extends State<Study> {
   bool listening=false;
   late Map<String,dynamic> progress=Map<String,dynamic>.from(jsonDecode(widget.prefs.getString('progress')??'{}'));
   int tab=0, index=0;
+  late Set<String> favorites=(widget.prefs.getStringList('favorites')??[]).toSet();
+  String search='';
+  bool onlyFavorites=false;
+  void toggleFavorite(Word w){final key='$language:${w.term}';setState((){if(!favorites.add(key))favorites.remove(key);});widget.prefs.setStringList('favorites',favorites.toList());}
   bool flipped=false;
   String? feedback;
   List<Word> get due => decks[language]!.where((w) => (progress['$language:${w.term}']?['due']??0)<=DateTime.now().millisecondsSinceEpoch).toList();
@@ -76,6 +80,7 @@ class _StudyState extends State<Study> {
         NavigationDestination(icon:Icon(Icons.home_outlined),label:'خانه'),
         NavigationDestination(icon:Icon(Icons.style_outlined),label:'کارت‌ها'),
         NavigationDestination(icon:Icon(Icons.edit_outlined),label:'نوشتاری'),
+        NavigationDestination(icon:Icon(Icons.search),label:'واژه‌نامه'),
         NavigationDestination(icon:Icon(Icons.insights_outlined),label:'پیشرفت')
       ]),
       body:SafeArea(child:Center(child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:620),child:ListView(padding:const EdgeInsets.all(24),children:[
@@ -84,22 +89,27 @@ class _StudyState extends State<Study> {
         if(tab==0)...[
           const Text('هر کلمه، یک دنیای جدید',style:TextStyle(fontSize:28,fontWeight:FontWeight.bold)),
           const SizedBox(height:12),
-          Card(color:colors.primaryContainer,child:Padding(padding:const EdgeInsets.all(24),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-            Text('${queue.length} کارت آماده مرور',style:const TextStyle(fontSize:22,fontWeight:FontWeight.bold)),
+          Card(clipBehavior:Clip.antiAlias,child:Container(decoration:const BoxDecoration(gradient:LinearGradient(colors:[Color(0xff7045ed),Color(0xff345fdb)])),child:Padding(padding:const EdgeInsets.all(24),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+            const Icon(Icons.auto_awesome,color:Colors.white,size:36),const SizedBox(height:16),Text('${queue.length} کارت آماده مرور',style:const TextStyle(fontSize:26,fontWeight:FontWeight.bold,color:Colors.white)),
             const SizedBox(height:16),
             FilledButton(onPressed:()=>setState(()=>tab=1),child:const Text('شروع یادگیری'))
-          ]))),
+          ])))),
           const SizedBox(height:12),
           OutlinedButton.icon(onPressed:()=>setState((){tab=2;listening=false;}),icon:const Icon(Icons.edit),label:const Text('تمرین نوشتاری')),
           OutlinedButton.icon(onPressed:()=>setState((){tab=2;listening=true;}),icon:const Icon(Icons.headphones),label:const Text('تمرین شنیداری'))
         ] else if(tab==3)...[
+          TextField(onChanged:(v)=>setState(()=>search=v),decoration:const InputDecoration(prefixIcon:Icon(Icons.search),hintText:'جستجوی کلمه یا معنی',border:OutlineInputBorder())),
+          SwitchListTile(title:const Text('فقط علاقه‌مندی‌ها'),value:onlyFavorites,onChanged:(v)=>setState(()=>onlyFavorites=v)),
+          for(final w in decks[language]!.where((w)=>(!onlyFavorites||favorites.contains('$language:${w.term}'))&&(w.term.toLowerCase().contains(search.toLowerCase())||w.meaning.contains(search))))
+            Card(child:ListTile(title:Text(w.term,textDirection:TextDirection.ltr),subtitle:Text(w.meaning),leading:IconButton(onPressed:()=>speak(w.term),icon:const Icon(Icons.volume_up)),trailing:IconButton(onPressed:()=>toggleFavorite(w),icon:Icon(favorites.contains('$language:${w.term}')?Icons.favorite:Icons.favorite_border)),onTap:()=>showModalBottomSheet(context:context,builder:(ctx)=>SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(mainAxisSize:MainAxisSize.min,children:[Text(w.term,style:const TextStyle(fontSize:30,fontWeight:FontWeight.bold)),Text(w.meaning),const SizedBox(height:16),Text(w.example,textDirection:TextDirection.ltr),TextButton(onPressed:()=>speak(w.example),child:const Text('شنیدن مثال'))]))))))
+        ] else if(tab==4)...[
           const Text('پیشرفت یادگیری',style:TextStyle(fontSize:26,fontWeight:FontWeight.bold)),
           const SizedBox(height:16),
           for(final e in names.entries) ListTile(title:Text(e.value),subtitle:LinearProgressIndicator(value:progress.keys.where((k)=>k.startsWith('${e.key}:')).length/decks[e.key]!.length),trailing:Text('${progress.keys.where((k)=>k.startsWith('${e.key}:')).length}/${decks[e.key]!.length}'))
         ] else if(word==null)...[
           const Icon(Icons.check_circle_outline,size:72),const SizedBox(height:16),const Center(child:Text('مرور امروز کامل شد.'))
         ] else ...[
-          Text('${queue.length} کارت باقی مانده'),
+          Row(children:[Expanded(child:Text('${queue.length} کارت باقی مانده')),IconButton(onPressed:()=>toggleFavorite(word),icon:Icon(favorites.contains('$language:${word.term}')?Icons.favorite:Icons.favorite_border))]),
           const SizedBox(height:12),
           if(tab==1)...[
             GestureDetector(onTap:()=>setState(()=>flipped=!flipped),child:AnimatedSwitcher(duration:const Duration(milliseconds:220),child:Card(key:ValueKey(flipped),color:colors.primaryContainer,child:Container(height:260,width:double.infinity,padding:const EdgeInsets.all(20),child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
