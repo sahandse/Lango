@@ -9,6 +9,7 @@ import 'dart:convert';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
+  await loadSentenceContent();
   runApp(Lango(prefs: prefs));
 }
 
@@ -122,6 +123,7 @@ class _StudyState extends State<Study> {
             OutlinedButton.icon(onPressed:()=>speak(word.term),icon:const Icon(Icons.volume_up),label:const Text('تلفظ')),
             Row(children:[const Icon(Icons.speed),Expanded(child:Slider(value:speed,min:0.25,max:0.65,onChanged:(v)=>setState(()=>speed=v)))]),
             if(flipped) OutlinedButton.icon(onPressed:()=>speak(word.example),icon:const Icon(Icons.record_voice_over),label:const Text('شنیدن مثال')),
+            if(flipped && word.attribution!=null) Text(word.attribution!,style:Theme.of(context).textTheme.bodySmall),
             if(flipped) Wrap(spacing:8,runSpacing:8,children:[for(final item in const [('دوباره',0),('سخت',1),('خوب',3),('آسان',7)]) FilledButton.tonal(onPressed:()=>rate(word,item.$2),child:Text(item.$1))])
           ] else ...[
             if(listening) FilledButton.icon(onPressed:()=>speak(word.term),icon:const Icon(Icons.headphones),label:const Text('گوش کن و بنویس')) else Text(word.meaning,style:const TextStyle(fontSize:32,fontWeight:FontWeight.bold)),
