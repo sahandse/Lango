@@ -22,6 +22,8 @@ def main():
     for row in rows(a.links):
         if len(row)!=2: continue
         first,second=(entries.get(k) for k in row)
+        if first and second and first[1]=='pes' and second[1] in LANG:
+            first,second=second,first
         if not first or not second or first[1] not in LANG or second[1]!='pes': continue
         ids=(first[0],second[0])
         if approved is not None and ids not in approved: continue
@@ -32,7 +34,11 @@ def main():
         result[LANG[first[1]]].append(dict(term=first[2],meaning=second[2],source='Tatoeba',sourceId=first[0],translationId=second[0],author=first[3],translator=second[3],license='CC BY 2.0 FR'))
     out=pathlib.Path(a.out)
     if approved is None and 'assets' in out.parts: raise SystemExit('Unreviewed candidates cannot enter app assets')
-    if approved is not None and not any(result.values()): raise SystemExit('No approved pairs matched')
+    if approved is not None:
+        found={(item['sourceId'],item['translationId']) for group in result.values() for item in group}
+        missing=approved-found
+        if missing: raise SystemExit(f'{len(missing)} approved pairs missing or invalid; review before shipping')
+        if not any(result.values()): raise SystemExit('No approved pairs matched')
     out.parent.mkdir(parents=True,exist_ok=True)
     out.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
     print({k:len(v) for k,v in result.items()})
