@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'vocabulary.dart';
 import 'games.dart';
+import 'voice.dart';
 import 'lango_theme.dart';
 import 'fsrs_review.dart';
 import 'package:flutter/material.dart';
@@ -174,7 +175,7 @@ class _StudyState extends State<Study> {
             if(mode=='voice')...[
               Text(word.term,style:const TextStyle(fontSize:32,fontWeight:FontWeight.bold)),
               FilledButton.icon(onPressed:()=>speak(word.term),icon:const Icon(Icons.volume_up),label:const Text('بشنو و تکرار کن')),
-              const Text('تمرین خودارزیابی؛ امتیازدهی خودکار تلفظ در این نسخه موجود نیست.'),
+              VoiceExercise(key:ValueKey('$accent:${word.term}'),term:word.term,locale:accent),
               OutlinedButton(onPressed:advance,child:const Text('کلمه بعدی'))
             ] else if(mode=='quiz')...[
               for(final option in options(word)) OutlinedButton(onPressed:feedback==null?()=>checkAnswer(word,option.term):null,child:Text(option.term)),
