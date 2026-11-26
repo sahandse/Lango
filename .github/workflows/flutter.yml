@@ -1,0 +1,21 @@
+name: Flutter checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter create --platforms=android,web .
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos
+      - run: flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lango-debug
+          path: build/app/outputs/flutter-apk/app-debug.apk
