@@ -1,5 +1,5 @@
 import 'vocabulary.dart';
-import 'review.dart';
+import 'fsrs_review.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -83,10 +83,10 @@ class _StudyState extends State<Study> {
   }
   Future<void> rate(Word word,int days) async {
     final key='$language:${word.term}';
-    final old=progress[key]?['reviews']??0;
-    final interval=nextInterval(progress[key]?['interval']??0,days);
+    final previous=progress[key];
+    final updated=scheduleReview(previous is Map?Map<String,dynamic>.from(previous):null,days,key.codeUnits.fold<int>(0,(h,c)=>(h*31+c)&0x7fffffff));
     setState(() {
-      progress[key]={'reviews':old+1,'interval':interval,'due':DateTime.now().add(Duration(days:interval,minutes:interval==0?10:0)).millisecondsSinceEpoch};
+      progress[key]=updated;
       index=0;flipped=false;feedback=null;answer.clear();
     });
     await widget.prefs.setString('progress',jsonEncode(progress));
