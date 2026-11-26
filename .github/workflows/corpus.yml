@@ -1,11 +1,17 @@
 name: Prepare real Tatoeba corpus
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/corpus.yml'
+      - 'tools/import_tatoeba.py'
 permissions:
   contents: read
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Download official exports
@@ -21,3 +27,4 @@ jobs:
           name: corpus-for-review
           path: build/corpus/candidates.json
           if-no-files-found: error
+          retention-days: 7
