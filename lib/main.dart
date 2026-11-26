@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import 'vocabulary.dart';
 import 'games.dart';
 import 'voice.dart';
+import 'lens.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'lango_theme.dart';
 import 'fsrs_review.dart';
 import 'package:flutter/material.dart';
@@ -136,6 +138,8 @@ class _StudyState extends State<Study> {
             skill('تلفظ و تکرار',Icons.record_voice_over_outlined,'voice'),
           ]),
           const SizedBox(height:16),
+          if(!kIsWeb && (defaultTargetPlatform==TargetPlatform.android||defaultTargetPlatform==TargetPlatform.iOS))
+            Card(child:ListTile(leading:const Icon(Icons.camera_alt_outlined),title:const Text('Lango Lens'),subtitle:const Text('تشخیص اشیا از تصویر'),onTap:() async {final selected=await Navigator.push<Word>(context,MaterialPageRoute(builder:(_)=>LensPage(english:decks['en']!,target:decks[language]!)));if(selected!=null&&mounted){final key='$language:${selected.term}';setState(()=>favorites.add(key));await widget.prefs.setStringList('favorites',favorites.toList());}})),
           Card(child:ListTile(leading:const Icon(Icons.sports_esports_outlined),title:const Text('Lango Games'),subtitle:const Text('تطبیق واژه و جمله‌سازی'),trailing:const Icon(Icons.chevron_left),onTap:() async {await Navigator.push(context,MaterialPageRoute<void>(builder:(_)=>GamesPage(words:decks[language]!,prefs:widget.prefs,language:language)));if(mounted)setState((){});})),
           Card(child:ListTile(title:const Text('کلمه روز'),subtitle:Text(decks[language]![DateTime.now().difference(DateTime(2020)).inDays%decks[language]!.length].term),trailing:IconButton(icon:const Icon(Icons.volume_up),onPressed:()=>speak(decks[language]![DateTime.now().difference(DateTime(2020)).inDays%decks[language]!.length].term)))),
         ] else if(tab==2)...[
