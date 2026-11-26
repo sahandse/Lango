@@ -4,6 +4,7 @@ import 'games.dart';
 import 'voice.dart';
 import 'lens.dart';
 import 'curriculum.dart';
+import 'specialized_page.dart';
 import 'learning_sources.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'lango_theme.dart';
@@ -133,6 +134,7 @@ class _StudyState extends State<Study> {
           const SizedBox(height:12),
           Card(child:ListTile(leading:const Icon(Icons.school_outlined),title:const Text('مسیر یادگیری A1 تا C2'),subtitle:Text('هدف: ${widget.prefs.getString('target-level:$language')??'A1'}'),trailing:const Icon(Icons.chevron_left),onTap:() async {await Navigator.push(context,MaterialPageRoute<void>(builder:(_)=>CurriculumPage(prefs:widget.prefs,language:language)));if(mounted)setState((){});})),
           Card(child:ListTile(leading:const Icon(Icons.menu_book_outlined),title:const Text('منابع و مراجع آموزشی'),onTap:()=>Navigator.push(context,MaterialPageRoute<void>(builder:(_)=>const LearningSources())))),
+          if(language=='en') Card(child:ListTile(leading:const Icon(Icons.library_books_outlined),title:const Text('واژگان تخصصی انگلیسی'),subtitle:const Text('مرور موضوعی و جستجوی آفلاین'),onTap:()=>Navigator.push(context,MaterialPageRoute<void>(builder:(_)=>SpecializedPage(prefs:widget.prefs))))),
           const Text('تمرین مهارت‌ها',style:TextStyle(fontSize:20,fontWeight:FontWeight.bold)),
           const SizedBox(height:10),
           GridView.count(crossAxisCount:2,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),childAspectRatio:1.15,children:[
