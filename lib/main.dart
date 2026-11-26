@@ -102,7 +102,7 @@ class _StudyState extends State<Study> {
           TextField(onChanged:(v)=>setState(()=>search=v),decoration:const InputDecoration(prefixIcon:Icon(Icons.search),hintText:'جستجوی کلمه یا معنی',border:OutlineInputBorder())),
           SwitchListTile(title:const Text('فقط علاقه‌مندی‌ها'),value:onlyFavorites,onChanged:(v)=>setState(()=>onlyFavorites=v)),
           for(final w in decks[language]!.where((w)=>(!onlyFavorites||favorites.contains('$language:${w.term}'))&&(w.term.toLowerCase().contains(search.toLowerCase())||w.meaning.contains(search))))
-            Card(child:ListTile(title:Text(w.term,textDirection:TextDirection.ltr),subtitle:Text(w.meaning),leading:IconButton(onPressed:()=>speak(w.term),icon:const Icon(Icons.volume_up)),trailing:IconButton(onPressed:()=>toggleFavorite(w),icon:Icon(favorites.contains('$language:${w.term}')?Icons.favorite:Icons.favorite_border)),onTap:()=>showModalBottomSheet(context:context,builder:(ctx)=>SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(mainAxisSize:MainAxisSize.min,children:[Text(w.term,style:const TextStyle(fontSize:30,fontWeight:FontWeight.bold)),Text(w.meaning),const SizedBox(height:16),Text(w.example,textDirection:TextDirection.ltr),TextButton(onPressed:()=>speak(w.example),child:const Text('شنیدن مثال'))]))))))
+            Card(child:ListTile(title:Text(w.term,textDirection:TextDirection.ltr),subtitle:Text(w.meaning),leading:IconButton(onPressed:()=>speak(w.term),icon:const Icon(Icons.volume_up)),trailing:IconButton(onPressed:()=>toggleFavorite(w),icon:Icon(favorites.contains('$language:${w.term}')?Icons.favorite:Icons.favorite_border)),onTap:()=>showModalBottomSheet(context:context,builder:(ctx)=>SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(mainAxisSize:MainAxisSize.min,children:[Text(w.term,style:const TextStyle(fontSize:30,fontWeight:FontWeight.bold)),Text(w.meaning),const SizedBox(height:16),if(w.example.isNotEmpty) Text(w.example,textDirection:TextDirection.ltr),if(w.example.isNotEmpty) TextButton(onPressed:()=>speak(w.example),child:const Text('شنیدن مثال'))])))))
         ] else if(tab==4)...[
           const Text('پیشرفت یادگیری',style:TextStyle(fontSize:26,fontWeight:FontWeight.bold)),
           const SizedBox(height:16),
@@ -115,14 +115,14 @@ class _StudyState extends State<Study> {
           if(tab==1)...[
             GestureDetector(onTap:()=>setState(()=>flipped=!flipped),child:AnimatedSwitcher(duration:const Duration(milliseconds:220),child:Card(key:ValueKey(flipped),color:colors.primaryContainer,child:Container(height:260,width:double.infinity,padding:const EdgeInsets.all(20),child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
               Text(flipped?word.meaning:word.term,textAlign:TextAlign.center,style:const TextStyle(fontSize:36,fontWeight:FontWeight.bold)),
-              if(flipped) Padding(padding:const EdgeInsets.only(top:16),child:Text(word.example,textDirection:TextDirection.ltr,textAlign:TextAlign.center)),
+              if(flipped && word.example.isNotEmpty) Padding(padding:const EdgeInsets.only(top:16),child:Text(word.example,textDirection:TextDirection.ltr,textAlign:TextAlign.center)),
               const SizedBox(height:20),const Text('برای چرخاندن لمس کنید')
             ]))))),
             const SizedBox(height:12),
             DropdownButton<String>(value:accent,items:accents[language]!.map((a)=>DropdownMenuItem(value:a,child:Text(a))).toList(),onChanged:(v){if(v==null)return;setState(()=>accent=v);widget.prefs.setString('accent:$language',v);}),
             OutlinedButton.icon(onPressed:()=>speak(word.term),icon:const Icon(Icons.volume_up),label:const Text('تلفظ')),
             Row(children:[const Icon(Icons.speed),Expanded(child:Slider(value:speed,min:0.25,max:0.65,onChanged:(v)=>setState(()=>speed=v)))]),
-            if(flipped) OutlinedButton.icon(onPressed:()=>speak(word.example),icon:const Icon(Icons.record_voice_over),label:const Text('شنیدن مثال')),
+            if(flipped && word.example.isNotEmpty) OutlinedButton.icon(onPressed:()=>speak(word.example),icon:const Icon(Icons.record_voice_over),label:const Text('شنیدن مثال')),
             if(flipped && word.attribution!=null) Text(word.attribution!,style:Theme.of(context).textTheme.bodySmall),
             if(flipped) Wrap(spacing:8,runSpacing:8,children:[for(final item in const [('دوباره',0),('سخت',1),('خوب',3),('آسان',7)]) FilledButton.tonal(onPressed:()=>rate(word,item.$2),child:Text(item.$1))])
           ] else ...[
