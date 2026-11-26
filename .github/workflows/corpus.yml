@@ -1,0 +1,23 @@
+name: Prepare real Tatoeba corpus
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download official exports
+        run: |
+          mkdir -p build/corpus
+          curl --fail --retry 3 -L https://downloads.tatoeba.org/exports/sentences_detailed.tar.bz2 -o build/corpus/sentences.tar.bz2
+          curl --fail --retry 3 -L https://downloads.tatoeba.org/exports/links.tar.bz2 -o build/corpus/links.tar.bz2
+          tar -xjf build/corpus/sentences.tar.bz2 -C build/corpus
+          tar -xjf build/corpus/links.tar.bz2 -C build/corpus
+          python3 tools/import_tatoeba.py build/corpus/sentences_detailed.csv build/corpus/links.csv --out build/corpus/candidates.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: corpus-for-review
+          path: build/corpus/candidates.json
+          if-no-files-found: error
