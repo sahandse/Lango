@@ -18,7 +18,7 @@ class _SpecializedPageState extends State<SpecializedPage>{
  final tts=FlutterTts();
  String topic='واژگان عمومی',query='',filter='all';
  String difficulty='all';
- static const topicDifficulty={'واژگان عمومی':'basic','فناوری':'intermediate','گرافیک':'advanced','نجوم':'advanced'};
+ static const topicDifficulty={'واژگان عمومی':'basic','فناوری':'intermediate','گرافیک':'advanced','نجوم':'advanced',"آمار":"intermediate","زیست‌شناسی":"intermediate","اینترنت":"basic","مدیریت":"intermediate","سینما":"basic"};
  List<String> get topics=>specializedVocabulary.keys.where((t)=>difficulty=='all'||topicDifficulty[t]==difficulty).toList();
  bool cards=false,flipped=false;
  int page=0;
