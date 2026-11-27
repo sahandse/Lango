@@ -5,6 +5,7 @@ ThemeData langoTheme(Brightness brightness) {
   final colors=ColorScheme.fromSeed(seedColor:const Color(0xff7051ed),brightness:brightness);
   return ThemeData(
     useMaterial3:true,
+    fontFamily:'Vazirmatn',
     colorScheme:colors,
     scaffoldBackgroundColor:dark?const Color(0xff11121a):const Color(0xfff5f6fa),
     appBarTheme:AppBarTheme(backgroundColor:Colors.transparent,elevation:0,centerTitle:false),
