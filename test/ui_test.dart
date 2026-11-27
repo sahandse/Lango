@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,13 @@ import 'package:lango/learning_sources.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  late Uint8List logo;
+  setUpAll(() async {
+    await loadSentenceContent();
+    logo = base64Decode(
+      (await rootBundle.loadString('assets/brand/logo.webp.b64')).trim(),
+    );
+  });
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -49,11 +57,6 @@ void main() {
             await tester.binding.setSurfaceSize(size);
             addTearDown(() => tester.binding.setSurfaceSize(null));
             final prefs = await SharedPreferences.getInstance();
-            await loadSentenceContent();
-            final logo = base64Decode(
-              (await rootBundle.loadString('assets/brand/logo.webp.b64'))
-                  .trim(),
-            );
             await tester.pumpWidget(
               shell(
                 Study(
@@ -88,7 +91,6 @@ void main() {
         await tester.binding.setSurfaceSize(const Size(568, 320));
         addTearDown(() => tester.binding.setSurfaceSize(null));
         final prefs = await SharedPreferences.getInstance();
-        await loadSentenceContent();
         for (final page in <Widget>[
           CurriculumPage(prefs: prefs, language: 'fr'),
           LevelLessonPage(
@@ -121,9 +123,6 @@ void main() {
       'mistakes': ['en:Hello', 'en:Book'],
     });
     final prefs = await SharedPreferences.getInstance();
-    final logo = base64Decode(
-      (await rootBundle.loadString('assets/brand/logo.webp.b64')).trim(),
-    );
     await tester.pumpWidget(
       shell(
         Study(prefs: prefs, dark: false, onTheme: () {}, logo: logo),

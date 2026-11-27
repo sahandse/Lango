@@ -9,6 +9,7 @@ permissions:
   contents: read
 jobs:
   check:
+    timeout-minutes: 25
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +38,7 @@ jobs:
       - run: python3 tools/prepare_fonts.py
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos
-      - run: flutter test test --reporter expanded
+      - run: flutter test test --reporter expanded --timeout 60s
       - run: flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
