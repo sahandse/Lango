@@ -24,3 +24,10 @@ flutter:
   assets:
     - assets/content/sentences.json
     - assets/brand/logo.webp.b64
+    - assets/fonts/OFL.txt
+  fonts:
+    - family: Vazirmatn
+      fonts:
+        - asset: assets/fonts/Vazirmatn-Regular.ttf
+        - asset: assets/fonts/Vazirmatn-Bold.ttf
+          weight: 700
