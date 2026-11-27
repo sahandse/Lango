@@ -33,6 +33,7 @@ jobs:
       - run: python3 tools/apply_brand.py
       - run: python3 tools/configure_voice.py
       - run: flutter --version
+      - run: python3 tools/prepare_fonts.py
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos
       - run: flutter test --reporter expanded
