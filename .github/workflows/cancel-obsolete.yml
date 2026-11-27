@@ -1,0 +1,27 @@
+name: Stop superseded task runs
+on:
+  push:
+    branches: [work/cancel-obsolete-builds]
+permissions:
+  contents: read
+  actions: write
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Cancel only the two superseded runs created by this task
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: sahandse/Lango
+        shell: bash
+        run: |
+          for pair in '45981080916:110b56e59aa66fd9994d169e1da9c98665ac0244' '45981398922:cfd00585d2e5102291261de67163f57f8a161e89'; do
+            run_id="${pair%%:*}"
+            expected="${pair#*:}"
+            head=$(gh api "repos/$GH_REPO/actions/runs/$run_id" --jq .head_sha)
+            state=$(gh api "repos/$GH_REPO/actions/runs/$run_id" --jq .status)
+            if [[ "$head" == "$expected" && "$state" != completed ]]; then
+              gh run cancel "$run_id" --repo "$GH_REPO"
+            fi
+          done
