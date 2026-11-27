@@ -1,0 +1,25 @@
+{
+  "sourceBuildCommit": "98974a363af003d70bbb84c6c6abbc2f68c2c7bf",
+  "appCodeCommit": "ba7978da6f32e5eca08a25b38b556c3b184bb498",
+  "sourceRun": 45984495610,
+  "certificateSha256": "f58c8ed20e1923cb5a99f9390f8ca3e514d7aaea0d02c026311af771f7c1d703",
+  "apkSignatureVerified": true,
+  "aabSignatureVerified": true,
+  "identicalCertificate": true,
+  "originalPayloadsUnchanged": true,
+  "apkZipAlignment16KiBVerified": true,
+  "releaseInstallOnDeviceTested": false,
+  "published": false,
+  "files": [
+    {
+      "name": "Lango-0.1.0+1-candidate.apk",
+      "bytes": 86859550,
+      "sha256": "89e3925c4c36dff4fe6a98ec57bde0e59af08b4f00592ae53f9551668f801a3f"
+    },
+    {
+      "name": "Lango-0.1.0+1-candidate.aab",
+      "bytes": 69786549,
+      "sha256": "e5a02a6fa82ec4a2db2cd40dc2e08edc34e9dcaf4ce64f72a132c77e04a31b39"
+    }
+  ]
+}

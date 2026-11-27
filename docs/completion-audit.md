@@ -13,7 +13,7 @@ Baseline: `62a7ff8272b9264ca7bf047f1368e819dd385ee0`. Existing user content and 
 | 8. Performance | Lens dictionary lookup cache and preview decode size; transcript edit distance uses two rows and no per-cell sorting. | The debug APK is 191,651,489 bytes (all ABIs / debug runtime). This is not representative of store install size. No device memory, startup, frame-time or signed release-size benchmark has been completed. |
 | 9. UI | Scrollable settings and dictionary details; text-scaled skill grid; scrollable card contents; progress clamping; corrupted personal-card recovery; one-card mistake removal regression fixed. | Widget matrix was executed on GitHub-hosted Flutter 3.50.1. It initially found a 41-pixel overflow at 320px / 2x text in both themes; the title was made flexible and the selector expanded. The subsequent workflow passed this test step. Hardware visual review remains separate. |
 | 10. Tests / CI | Added content, speech, personal-storage, UI matrix and regression tests; Python corpus-audit tests; existing tests retained. | Test status is recorded below only after actual execution. |
-| 11. APK / AAB | CI prepares signed candidates when all four existing signing secrets are present, verifies signatures and records SHA-256. Automatic GitHub Release publication removed. | Signed candidate steps were skipped in run 45981939526 because persistent signing credentials were unavailable. The browser fallback reached GitHub sign-in; it is not authenticated. A separate branch/workflow compiles explicitly unsigned release files for later signing. These must never be installed or published as signed releases. No release has been published. |
+| 11. APK / AAB | CI prepares signed candidates when all four existing signing secrets are present, verifies signatures and records SHA-256. Automatic GitHub Release publication removed. | Signed candidate steps were skipped in run 45981939526 because persistent signing credentials were unavailable. GitHub browser authentication was subsequently completed. The initial persistent release key was created locally and used to sign both candidates; see the signed-candidate follow-up below. Repository secrets are still unconfigured. A separate branch/workflow compiles explicitly unsigned release files for later signing. These must never be installed or published as signed releases. No release has been published. |
 
 ## Validation log
 
@@ -50,12 +50,12 @@ These are spot-check findings, not an accuracy estimate for the entire corpus. T
 
 ## Workspace preservation
 
-Task checkout: `/workspace/scratch/998d53f24f4d/Lango`. Upstream data and SDK checkouts are retained as reproducible inputs; no unrelated user files or remote branches were removed. No signing credentials were created or committed. Debug artifact SHA-256: `0d1750fa1c110adfe9da505639911baf26ed0e06ebe14d4511a7dc09c5dfc874` (191,651,489 bytes). This debug size is not a release-size benchmark.
+Task checkout: `/workspace/scratch/998d53f24f4d/Lango`. Upstream data and SDK checkouts are retained as reproducible inputs; no unrelated user files or remote branches were removed. No private signing credentials were committed. The later signing follow-up created and privately backed up the initial persistent release key. Debug artifact SHA-256: `0d1750fa1c110adfe9da505639911baf26ed0e06ebe14d4511a7dc09c5dfc874` (191,651,489 bytes). This debug size is not a release-size benchmark.
 
 ## Evidence links
 
 - Main app validation and offline device run: https://github.com/sahandse/Lango/actions/runs/45981939526
-- Signed release preparation is blocked by unavailable `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_PASSWORD`, `ANDROID_KEY_ALIAS`.
+- Automated CI signing remains unconfigured because the four repository signing secrets are absent. Local candidate signing is completed in the follow-up below.
 - Unsigned build preparation: https://github.com/sahandse/Lango/actions/runs/45983276141 (first attempt failed on Maven HTTP 429; a single retry was started).
 
 ## Release-only build issue discovered
@@ -79,7 +79,7 @@ Superseded task-owned runs `45981080916` and `45981398922` were cancelled by a o
 2. Expand and independently validate the curriculum beyond the current 60 lessons / 240 phrase pairs; fill missing IPA with reviewed sources and accent-specific coverage.
 3. Integrate and calibrate real acoustic pronunciation assessment; transcript similarity must remain labelled as transcript similarity.
 4. Test actual microphone, denied permissions, camera/gallery and representative image recognition on Android hardware. Measure release startup, memory and frames on representative devices.
-5. Supply the four persistent signing secrets via authenticated GitHub settings, build signed candidates and verify the signing certificate and install/update path. Browser fallback is currently at sign-in; repository code access does not supply a browser session or secret-write capability.
+5. Configure the four repository signing secrets for future automated signing. Both current candidates are already signed locally with the persistent key and have verified matching certificates. Real-device release installation and update compatibility remain untested.
 6. Obtain the owner's explicit final publication approval. Neither an unsigned build nor the debug APK is a publishable release.
 
 ### Unsigned package measurements
@@ -92,3 +92,18 @@ Superseded task-owned runs `45981080916` and `45981398922` were cancelled by a o
 Both files were downloaded from the successful artifact and independently hashed. The artifact ZIP digest was also verified. These are universal release-build file sizes, not per-device install sizes or signed store submissions.
 
 Final audit/report changes do not alter Dart application code from the tested `ba7978d` snapshot. The Java 21 build-tool change is independently exercised by successful release run `45984495610`. The final Unicode audit/tool changes passed all three Python tests locally; the audit/report closeout commit skips redundant Flutter/Android builds.
+
+## Signed-candidate follow-up — 2026-11-27
+
+GitHub sign-in was successfully verified on the repository Actions secrets page. That page confirmed no repository or environment signing secrets existed. The first persistent Lango release key was generated locally (RSA-3072, SHA256withRSA, alias `lango-release`) and its private backup was saved for the owner as `Lango-release-signing-backup.zip`. No private key, key password or keystore base64 is present in this repository.
+
+The exact release APK/AAB from successful run `45984495610` were signed without rebuilding or changing any original ZIP entry payload. Official Android Build Tools 35.0.0 were downloaded from Google's repository and checked against the repository archive checksum. APK signing/verification used `apksigner`; AAB signing/verification used JDK 21 `jarsigner`. Both signatures were verified, both certificates matched the persistent key, and `zipalign -c -P 16 4` passed for the signed APK. This archive-alignment check is not a physical-device compatibility test.
+
+Public certificate SHA-256: `f58c8ed20e1923cb5a99f9390f8ca3e514d7aaea0d02c026311af771f7c1d703`.
+
+| Signed candidate | Bytes | SHA-256 |
+|---|---:|---|
+| Lango-0.1.0+1-candidate.apk | 86,859,550 | `89e3925c4c36dff4fe6a98ec57bde0e59af08b4f00592ae53f9551668f801a3f` |
+| Lango-0.1.0+1-candidate.aab | 69,786,549 | `e5a02a6fa82ec4a2db2cd40dc2e08edc34e9dcaf4ce64f72a132c77e04a31b39` |
+
+`signing-verification.json` records the checks and their limits. The public signing certificate is in `android-signing-certificate.pem`. Current signed candidates and the private signing backup were delivered privately; no public GitHub Release, tag or store publication was created. The incomplete curriculum/IPA, corpus-rights clarification, acoustic evaluation, device camera/microphone tests, release device installation/update test and release performance measurements remain incomplete. Signing completion does not change those statuses.
