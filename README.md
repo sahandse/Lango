@@ -1,8 +1,59 @@
-# Lango
-Flutter vocabulary learning app. Initial implementation: Persian UI, five small starter decks, flashcards, device TTS accent selection, writing practice, local progress and fixed-interval reviews.
+# Lango | لانگو
 
-## Run
-Install Flutter stable. Run `flutter create --platforms=android,ios,web .` to generate platform scaffolding, then `flutter pub get` and `flutter run`.
+اپ یادگیری واژه و عبارت با رابط فارسی، تم روشن و تاریک و فونت داخلی وزیرمتن؛ برای انگلیسی، آلمانی، فرانسوی، اسپانیایی و ترکی استانبولی.
 
-## Status
-Early implementation, not a release. Starter vocabulary is limited; FSRS, speech scoring, full curriculum, custom decks and branded icon are not implemented yet. TTS availability depends on the device.
+- فلش‌کارت، مرور FSRS، علاقه‌مندی‌ها و دفترچه اشتباهات
+- واژه‌نامه و کارت شخصی با ذخیره محلی
+- ۶۰ درس تألیفی در شش گروه A1 تا C2، شامل ۲۴۰ عبارت و ترجمه فارسی
+- تمرین معنی، نوشتن، شنیدن و نوشتن، و ترتیب واژه‌ها
+- تلفظ با موتور دستگاه و انتخاب لهجه؛ IPA برای بخشی از واژه‌ها
+- Voice برای مقایسه **متن تشخیص‌داده‌شده** با عبارت هدف
+- Lens برای پیشنهاد نام اشیا با ML Kit و تطبیق با ترجمه‌های موجود
+- واژگان تخصصی منتخب و بازی‌های آموزشی
+
+این تعداد درس، پوشش جامع یا گواهی CEFR نیست. Voice امتیاز آوایی، روانی یا صحت لهجه نمی‌دهد. نبود IPA یا ترجمه با داده حدسی پوشانده نمی‌شود.
+
+## اجرا
+
+Flutter stable و Java 17 لازم است. CI فایل‌های Android و Web را در پوشه موقت تولید می‌کند و فقط پوشه‌های پلتفرمیِ موجودنبوده را کپی می‌کند. برای توسعه محلی نیز پوشه‌های پلتفرمی را با همین شناسه بسازید:
+
+```sh
+flutter create --no-pub --platforms=android,web --project-name lango --org ir.lango /tmp/lango-scaffold
+# پوشه‌های android و web را در صورت نبودن به ریشه پروژه کپی کنید.
+python -m pip install Pillow
+python tools/apply_brand.py
+python tools/configure_voice.py
+python tools/prepare_fonts.py
+flutter pub get
+flutter run
+```
+
+## تست و ساخت
+
+```sh
+python -m unittest discover -s tools/tests -v
+flutter analyze --no-fatal-infos
+flutter test test --reporter expanded --timeout 60s
+flutter build apk --debug
+```
+
+تست دستگاه در `integration_test/offline_test.dart` روی شبیه‌ساز جداگانه CI با Wi-Fi و دیتای خاموش اجرا می‌شود و از تم‌ها و واژه‌نامه تصویر می‌گیرد. این تست جای تست دوربین، میکروفون و مدل‌های گفتار روی گوشی واقعی را نمی‌گیرد. تست‌های UI اندازه‌های ۳۲۰×۵۶۸، ۸۰۰×۶۰۰، ۱۲۸۰×۸۰۰ و حالت افقی با متن بزرگ را بررسی می‌کنند؛ نتیجه واقعی هر اجرا در Actions ملاک است.
+
+## آفلاین و منابع
+
+محتوا، پیشرفت، علاقه‌مندی و وزیرمتن داخل برنامه/دستگاه نگه‌داری می‌شوند. در دسترس بودن TTS و تشخیص گفتار آفلاین به موتور و بسته‌های زبانی نصب‌شده بستگی دارد. لینک‌های منابع اینترنت می‌خواهند.
+
+FarsiMatrix به‌طور کامل وارد برنامه نشده است. ممیزی تمام ۲۴۵٬۹۷۵ مدخل در ۵۱ دسته، تعارض مجوز README/فایل LICENSE و ابهام منشأ دیتابیس را ثبت کرده است. برای جزئیات و محدودیت‌های هر مرحله، [گزارش ممیزی](docs/completion-audit.md) و [گزارش ساختاری داده](docs/farsimatrix-audit.json) را ببینید. اطلاعات بیشتر درباره محتوا در [content.md](docs/content.md) آمده است.
+
+وزیرمتن v33.003 با مجوز SIL OFL در `assets/fonts/OFL.txt` قرار دارد. هیچ فایل کلید امضا یا رمز عبوری نباید در مخزن ثبت شود.
+
+## نسخه انتشار
+
+Workflow فقط در صورت وجود چهار Secret پایدار زیر APK/AAB امضاشده و گزارش امضا/SHA-256 را به‌عنوان **candidate** می‌سازد:
+
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+
+در نبود آن‌ها، CI علت ساخته‌نشدن candidate را صریحاً گزارش می‌کند؛ APK دیباگ نسخه قابل انتشار محسوب نمی‌شود. این Workflow هیچ GitHub Release یا انتشار فروشگاهی انجام نمی‌دهد. انتشار نهایی پس از تأیید صاحب پروژه است.

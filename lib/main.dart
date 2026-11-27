@@ -11,7 +11,12 @@ import 'specialized_page.dart';
 import 'learning_sources.dart';
 
 import 'package:flutter/foundation.dart'
-    show kIsWeb, defaultTargetPlatform, TargetPlatform;
+    show
+        kIsWeb,
+        defaultTargetPlatform,
+        TargetPlatform,
+        LicenseRegistry,
+        LicenseEntryWithLineBreaks;
 
 import 'lango_theme.dart';
 import 'fsrs_review.dart';
@@ -28,6 +33,11 @@ import 'package:flutter/services.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks([
+      'Vazirmatn',
+    ], await rootBundle.loadString('assets/fonts/OFL.txt'));
+  });
   final prefs = await SharedPreferences.getInstance();
   await loadSentenceContent();
   for (final lang in names.keys) {
@@ -447,7 +457,14 @@ class _StudyState extends State<Study> {
               ),
             ),
             const SizedBox(width: 10),
-            const Text('Lango', style: TextStyle(fontWeight: FontWeight.w900)),
+            const Flexible(
+              child: Text(
+                'Lango',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
+            ),
           ],
         ),
         actions: [
@@ -485,6 +502,7 @@ class _StudyState extends State<Study> {
               padding: const EdgeInsets.all(24),
               children: [
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: language,
                   decoration: const InputDecoration(
                     labelText: 'زبان یادگیری',

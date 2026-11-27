@@ -20,6 +20,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.50.1'
+          cache: true
       - name: Generate missing platform files in isolation
         run: |
           scaffold=$(mktemp -d)
@@ -100,6 +102,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.50.1'
+          cache: true
       - name: Prepare Android test project
         run: |
           scaffold=$(mktemp -d)
