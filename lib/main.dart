@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'vocabulary.dart';
+import 'ipa.dart';
 import 'games.dart';
 import 'voice.dart';
 import 'lens.dart';
@@ -81,6 +82,7 @@ class _StudyState extends State<Study> {
   int tab=0, index=0;
   late Set<String> favorites=(widget.prefs.getStringList('favorites')??[]).toSet();
   String search='';
+  int dictionaryPage=0;
   bool onlyFavorites=false;
   void toggleFavorite(Word w){final key='$language:${w.term}';setState((){if(!favorites.add(key))favorites.remove(key);});widget.prefs.setStringList('favorites',favorites.toList());}
   bool flipped=false;
@@ -110,6 +112,8 @@ class _StudyState extends State<Study> {
     final queue=tab==1&&mode!='cards'?(mode=='mistakes'?decks[language]!.where((w)=>mistakes.contains('$language:${w.term}')).toList():decks[language]!):due;
     final word=queue.isEmpty?null:queue[index%queue.length];
     final colors=Theme.of(context).colorScheme;
+    final dictionary=tab==2?decks[language]!.where((w)=>(!onlyFavorites||favorites.contains('$language:${w.term}'))&&(w.term.toLowerCase().contains(search.toLowerCase())||w.meaning.contains(search))).toList():<Word>[];
+    final pageStart=dictionaryPage*30<dictionary.length?dictionaryPage*30:0;
     return Scaffold(
       appBar:AppBar(title:Row(mainAxisSize:MainAxisSize.min,children:[ClipRRect(borderRadius:BorderRadius.circular(10),child:Image.memory(widget.logo,width:36,height:36,fit:BoxFit.cover)),const SizedBox(width:10),const Text('Lango',style:TextStyle(fontWeight:FontWeight.w900))]),actions:[IconButton(onPressed:settings,icon:const Icon(Icons.settings_outlined))]),
       bottomNavigationBar:NavigationBar(selectedIndex:tab,onDestinationSelected:(i)=>setState((){tab=i;mode='cards';reset();}),destinations:const [
@@ -119,7 +123,7 @@ class _StudyState extends State<Study> {
         NavigationDestination(icon:Icon(Icons.insights_outlined),label:'پیشرفت')
       ]),
       body:SafeArea(child:Center(child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:620),child:ListView(padding:const EdgeInsets.all(24),children:[
-        DropdownButtonFormField<String>(value:language,decoration:const InputDecoration(labelText:'زبان یادگیری',border:OutlineInputBorder()),items:names.entries.map((e)=>DropdownMenuItem(value:e.key,child:Text(e.value))).toList(),onChanged:(v){if(v==null)return;setState((){language=v;accent=accents[v]!.contains(widget.prefs.getString('accent:$v'))?widget.prefs.getString('accent:$v')!:accents[v]!.first;reset();});widget.prefs.setString('language',v);}),
+        DropdownButtonFormField<String>(value:language,decoration:const InputDecoration(labelText:'زبان یادگیری',border:OutlineInputBorder()),items:names.entries.map((e)=>DropdownMenuItem(value:e.key,child:Text(e.value))).toList(),onChanged:(v){if(v==null)return;setState((){language=v;dictionaryPage=0;accent=accents[v]!.contains(widget.prefs.getString('accent:$v'))?widget.prefs.getString('accent:$v')!:accents[v]!.first;reset();});widget.prefs.setString('language',v);}),
         const SizedBox(height:20),
         if(tab==0)...[
           const Text('هر کلمه، یک دنیای جدید',style:TextStyle(fontSize:28,fontWeight:FontWeight.bold)),
@@ -150,10 +154,12 @@ class _StudyState extends State<Study> {
           Card(child:ListTile(title:const Text('کلمه روز'),subtitle:Text(decks[language]![DateTime.now().difference(DateTime(2020)).inDays%decks[language]!.length].term),trailing:IconButton(icon:const Icon(Icons.volume_up),onPressed:()=>speak(decks[language]![DateTime.now().difference(DateTime(2020)).inDays%decks[language]!.length].term)))),
         ] else if(tab==2)...[
           OutlinedButton.icon(onPressed:addCard,icon:const Icon(Icons.add),label:const Text('فلش‌کارت شخصی')),
-          TextField(onChanged:(v)=>setState(()=>search=v),decoration:const InputDecoration(prefixIcon:Icon(Icons.search),hintText:'جستجوی کلمه یا معنی',border:OutlineInputBorder())),
-          SwitchListTile(title:const Text('فقط علاقه‌مندی‌ها'),value:onlyFavorites,onChanged:(v)=>setState(()=>onlyFavorites=v)),
-          for(final w in decks[language]!.where((w)=>(!onlyFavorites||favorites.contains('$language:${w.term}'))&&(w.term.toLowerCase().contains(search.toLowerCase())||w.meaning.contains(search))))
-            Card(child:ListTile(title:Text(w.term,textDirection:TextDirection.ltr),subtitle:Text(w.meaning),leading:IconButton(onPressed:()=>speak(w.term),icon:const Icon(Icons.volume_up)),trailing:IconButton(onPressed:()=>toggleFavorite(w),icon:Icon(favorites.contains('$language:${w.term}')?Icons.favorite:Icons.favorite_border)),onTap:()=>showModalBottomSheet(context:context,builder:(ctx)=>SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(mainAxisSize:MainAxisSize.min,children:[Text(w.term,style:const TextStyle(fontSize:30,fontWeight:FontWeight.bold)),Text(w.meaning),const SizedBox(height:16),if(w.example.isNotEmpty) Text(w.example,textDirection:TextDirection.ltr),if(w.example.isNotEmpty) TextButton(onPressed:()=>speak(w.example),child:const Text('شنیدن مثال')),if(w.attribution!=null) Text(w.attribution!,style:Theme.of(context).textTheme.bodySmall)]))))))
+          TextField(onChanged:(v)=>setState((){search=v;dictionaryPage=0;}),decoration:const InputDecoration(prefixIcon:Icon(Icons.search),hintText:'جستجوی کلمه یا معنی',border:OutlineInputBorder())),
+          SwitchListTile(title:const Text('فقط علاقه‌مندی‌ها'),value:onlyFavorites,onChanged:(v)=>setState((){onlyFavorites=v;dictionaryPage=0;})),
+          for(final w in dictionary.skip(pageStart).take(30))
+            Card(child:ListTile(title:Text(w.term,textDirection:TextDirection.ltr),subtitle:Text(w.meaning),leading:IconButton(onPressed:()=>speak(w.term),icon:const Icon(Icons.volume_up)),trailing:IconButton(onPressed:()=>toggleFavorite(w),icon:Icon(favorites.contains('$language:${w.term}')?Icons.favorite:Icons.favorite_border)),onTap:()=>showModalBottomSheet(context:context,builder:(ctx)=>SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(mainAxisSize:MainAxisSize.min,children:[Text(w.term,style:const TextStyle(fontSize:30,fontWeight:FontWeight.bold)),Text(w.meaning),if(ipaFor(accent,w.term)!=null) Text('/${ipaFor(accent,w.term)}/',textDirection:TextDirection.ltr),const SizedBox(height:16),if(w.example.isNotEmpty) Text(w.example,textDirection:TextDirection.ltr),if(w.example.isNotEmpty) TextButton(onPressed:()=>speak(w.example),child:const Text('شنیدن مثال')),if(w.attribution!=null) Text(w.attribution!,style:Theme.of(context).textTheme.bodySmall)]))))))
+          if(dictionary.isEmpty)const Text('واژه‌ای پیدا نشد.'),
+          Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[TextButton(onPressed:pageStart>0?()=>setState(()=>dictionaryPage=pageStart~/30-1):null,child:const Text('قبلی')),Text('${dictionary.isEmpty?0:pageStart+1} / ${dictionary.length}'),TextButton(onPressed:pageStart+30<dictionary.length?()=>setState(()=>dictionaryPage=pageStart~/30+1):null,child:const Text('بعدی'))]),
         ] else if(tab==3)...[
           const Text('پیشرفت یادگیری',style:TextStyle(fontSize:26,fontWeight:FontWeight.bold)),
           Card(child:ListTile(leading:const Icon(Icons.sports_esports_outlined),title:const Text('نتایج بازی آموزشی'),subtitle:Text('${widget.prefs.getInt("games:$language:correct")??0} پاسخ صحیح از ${widget.prefs.getInt("games:$language:attempts")??0}'))),
@@ -174,6 +180,7 @@ class _StudyState extends State<Study> {
             ]))))),
             const SizedBox(height:12),
             DropdownButton<String>(value:accent,items:accents[language]!.map((a)=>DropdownMenuItem(value:a,child:Text(a))).toList(),onChanged:(v){if(v==null)return;setState(()=>accent=v);widget.prefs.setString('accent:$language',v);}),
+            if(ipaFor(accent,word.term)!=null) Center(child:Text('/${ipaFor(accent,word.term)}/',textDirection:TextDirection.ltr,style:Theme.of(context).textTheme.titleMedium)),
             OutlinedButton.icon(onPressed:()=>speak(word.term),icon:const Icon(Icons.volume_up),label:const Text('تلفظ')),
             Row(children:[const Icon(Icons.speed),Expanded(child:Slider(value:speed,min:0.25,max:0.65,onChanged:(v)=>setState(()=>speed=v)))]),
             if(flipped && word.example.isNotEmpty) OutlinedButton.icon(onPressed:()=>speak(word.example),icon:const Icon(Icons.record_voice_over),label:const Text('شنیدن مثال')),
@@ -184,6 +191,7 @@ class _StudyState extends State<Study> {
             const SizedBox(height:16),
             if(mode=='voice')...[
               Text(word.term,style:const TextStyle(fontSize:32,fontWeight:FontWeight.bold)),
+              if(ipaFor(accent,word.term)!=null)Text('/${ipaFor(accent,word.term)}/',textDirection:TextDirection.ltr),
               FilledButton.icon(onPressed:()=>speak(word.term),icon:const Icon(Icons.volume_up),label:const Text('بشنو و تکرار کن')),
               VoiceExercise(key:ValueKey('$accent:${word.term}'),term:word.term,locale:accent),
               OutlinedButton(onPressed:advance,child:const Text('کلمه بعدی'))
