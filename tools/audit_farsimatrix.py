@@ -5,6 +5,12 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import unicodedata
+
+
+def has_arabic_letters(text):
+    # Persian uses Arabic-script letters, including presentation forms outside U+0600–U+06FF.
+    return any(unicodedata.category(ch).startswith('L') and 'ARABIC' in unicodedata.name(ch, '') for ch in text)
 
 
 def audit(root):
@@ -27,8 +33,8 @@ def audit(root):
                 counts['duplicate_terms'] += 1
             if not term or not isinstance(meanings, list) or not meanings or not all(isinstance(m, str) and m.strip() for m in meanings):
                 counts['invalid_entries'] += 1
-            elif not any('\u0600' <= ch <= '\u06ff' for ch in ''.join(meanings)):
-                counts['no_persian_script'] += 1
+            elif not has_arabic_letters(''.join(meanings)):
+                counts['no_arabic_script_letters'] += 1
             ids.add(row.get('id'))
             terms.add(term)
         totals.update(counts)
@@ -41,7 +47,7 @@ def audit(root):
                 license_file='Apache-2.0' if 'Apache License' in license_text else 'unrecognized',
                 readme_claims_mit='[MIT](LICENSE)' in readme,
                 redistribution_status='blocked_pending_dataset_provenance_and_license_clarification',
-                quality_note='Structural checks only; no automatic claim of translation accuracy. Non-Persian script is a review flag, not an automatic error.',
+                quality_note='Structural checks only; no automatic claim of translation accuracy. Absence of Arabic-script letters is a review flag, not an automatic error or language identification.',
                 files=files)
 
 

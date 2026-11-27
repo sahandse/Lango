@@ -22,7 +22,13 @@ class AuditTest(unittest.TestCase):
             subprocess.run(['git','-C',d,'add','.'],check=True)
             subprocess.run(['git','-C',d,'-c','user.name=Test','-c','user.email=test@example.invalid','commit','-qm','fixture'],check=True)
             result=module.audit(root)
-            self.assertEqual(result['totals'],{'entries':3,'duplicate_ids':1,'duplicate_terms':1,'no_persian_script':1,'invalid_entries':1})
+            self.assertEqual(result['totals'],{'entries':3,'duplicate_ids':1,'duplicate_terms':1,'no_arabic_script_letters':1,'invalid_entries':1})
             self.assertTrue(result['readme_claims_mit'])
             self.assertTrue(result['redistribution_status'].startswith('blocked'))
             self.assertEqual(result,module.audit(root))
+
+    def test_unicode_presentation_forms_are_not_false_positive_flags(self):
+        self.assertTrue(module.has_arabic_letters('ﻛﺘﺎﺏ'))
+        self.assertTrue(module.has_arabic_letters('کتاب'))
+        self.assertFalse(module.has_arabic_letters('۱۲۳'))
+        self.assertFalse(module.has_arabic_letters('book'))

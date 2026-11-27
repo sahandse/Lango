@@ -4,36 +4,36 @@
   "groups": 51,
   "totals": {
     "entries": 245975,
-    "no_persian_script": 3001
+    "no_arabic_script_letters": 2742
   },
   "license_file": "Apache-2.0",
   "readme_claims_mit": true,
   "redistribution_status": "blocked_pending_dataset_provenance_and_license_clarification",
-  "quality_note": "Structural checks only; no automatic claim of translation accuracy. Non-Persian script is a review flag, not an automatic error.",
+  "quality_note": "Structural checks only; no automatic claim of translation accuracy. Absence of Arabic-script letters is a review flag, not an automatic error or language identification.",
   "files": [
     {
       "path": "public/data/groups/accounting-1.json",
       "sha256": "2effce7cbf63bd63be5e123db7863574ee064550b89bb72ae43825887b1eb53e",
       "entries": 10090,
-      "no_persian_script": 3
+      "no_arabic_script_letters": 3
     },
     {
       "path": "public/data/groups/accounting-2.json",
       "sha256": "1adcca2bb7130f796caf3ce3b55570549a410b0ab2cc9ea953019a36ae9040f6",
       "entries": 5344,
-      "no_persian_script": 6
+      "no_arabic_script_letters": 6
     },
     {
       "path": "public/data/groups/accounting-3.json",
       "sha256": "9324da77801adb666d2addfcb06fd33e52d734594d6d45ba1fc37a64b5929499",
       "entries": 10086,
-      "no_persian_script": 3
+      "no_arabic_script_letters": 3
     },
     {
       "path": "public/data/groups/algorithms.json",
       "sha256": "571f7f77deb489c9188954d0dcccb0b6744cb8895b7aac20c623d83813ea01e2",
       "entries": 1195,
-      "no_persian_script": 2
+      "no_arabic_script_letters": 2
     },
     {
       "path": "public/data/groups/astronomy.json",
@@ -44,19 +44,19 @@
       "path": "public/data/groups/aviation.json",
       "sha256": "7a677b063ba0edabd589c2e35365c1da3c143b7523be5ff43317c35b9e25ea57",
       "entries": 1435,
-      "no_persian_script": 508
+      "no_arabic_script_letters": 508
     },
     {
       "path": "public/data/groups/biology.json",
       "sha256": "53c967acca561149278d2d8216ab783347b993e5a4a982e840013392185b7bab",
       "entries": 7733,
-      "no_persian_script": 6
+      "no_arabic_script_letters": 6
     },
     {
       "path": "public/data/groups/chat-slang.json",
       "sha256": "3a1f1dd7e5de9a3993dbb1bd5bd073f24bd88c432738647842bec6f83353d85d",
       "entries": 406,
-      "no_persian_script": 36
+      "no_arabic_script_letters": 36
     },
     {
       "path": "public/data/groups/chemical-engineering.json",
@@ -72,7 +72,7 @@
       "path": "public/data/groups/cinema-2.json",
       "sha256": "96c1d806b3d1a8f2cd359ed94a5c3a352d2ac8f017c2bf101511f6df0ca9e244",
       "entries": 11911,
-      "no_persian_script": 4
+      "no_arabic_script_letters": 4
     },
     {
       "path": "public/data/groups/cinema-3.json",
@@ -88,31 +88,31 @@
       "path": "public/data/groups/computer.json",
       "sha256": "cf0c8508e13a2c2451aeb14580a16f1b6db7648f458e4189a4a9d72f8b6d59b1",
       "entries": 1261,
-      "no_persian_script": 1
+      "no_arabic_script_letters": 1
     },
     {
       "path": "public/data/groups/dentistry.json",
       "sha256": "f06007367cf3cccd911361ffe3cd467bac9b38fcc328fb769667dfbcb0ba58ce",
       "entries": 276,
-      "no_persian_script": 1
+      "no_arabic_script_letters": 1
     },
     {
       "path": "public/data/groups/domains.json",
       "sha256": "71959588c1d9333a6c45d7f80e3e656c52262c8b46a450f175cdda33e0fb9bfc",
       "entries": 17,
-      "no_persian_script": 1
+      "no_arabic_script_letters": 1
     },
     {
       "path": "public/data/groups/electronics-1.json",
       "sha256": "1bcb1ad18c16500589ef675d254bc9042c9af3c11fc320cb4fb1a6bf68796e7a",
       "entries": 299,
-      "no_persian_script": 4
+      "no_arabic_script_letters": 4
     },
     {
       "path": "public/data/groups/electronics-2.json",
       "sha256": "66112659bd015386e141e506e779ea99b85abcf308c05d029798717256275f82",
       "entries": 18515,
-      "no_persian_script": 1
+      "no_arabic_script_letters": 1
     },
     {
       "path": "public/data/groups/electronics-3.json",
@@ -133,7 +133,7 @@
       "path": "public/data/groups/geologist.json",
       "sha256": "4e2a50953a59d4e2fc423ce6161bc3b0f806f6e244f320d183f6b18e9d150744",
       "entries": 27418,
-      "no_persian_script": 1
+      "no_arabic_script_letters": 1
     },
     {
       "path": "public/data/groups/geology.json",
@@ -154,7 +154,7 @@
       "path": "public/data/groups/idioms-1.json",
       "sha256": "9b96bbca72a68c6f309308e8011c3640a9aa4a5eaae7365a4587e980d2415d05",
       "entries": 2090,
-      "no_persian_script": 6
+      "no_arabic_script_letters": 6
     },
     {
       "path": "public/data/groups/idioms-2.json",
@@ -170,31 +170,31 @@
       "path": "public/data/groups/illustrated-idioms.json",
       "sha256": "6f246eccfca21618e098b09449e1bc1f868b41e88d3561432ab9a16048e9b163",
       "entries": 987,
-      "no_persian_script": 261
+      "no_arabic_script_letters": 261
     },
     {
       "path": "public/data/groups/industrial-engineering-1.json",
       "sha256": "b151fc646323354e8f19005fc714b7182758ca56defa509251f7c456c89424fb",
       "entries": 6376,
-      "no_persian_script": 3
+      "no_arabic_script_letters": 3
     },
     {
       "path": "public/data/groups/industrial-engineering-2.json",
       "sha256": "2a2d184f8ad1eb6a51f07609076cff7f1443693c2fd74d720d8de55a882e1593",
       "entries": 1474,
-      "no_persian_script": 1
+      "no_arabic_script_letters": 1
     },
     {
       "path": "public/data/groups/internet.json",
       "sha256": "dbcf5d96989a874ccee92cee310bc4b2372a6e75b48ff2f741c7ece7f29b380e",
       "entries": 483,
-      "no_persian_script": 3
+      "no_arabic_script_letters": 3
     },
     {
       "path": "public/data/groups/it.json",
       "sha256": "0e8c59d82e5ee95bc7105b6d9648ab16baeae5e8ba206467f443c0a0ce6953a8",
       "entries": 3810,
-      "no_persian_script": 203
+      "no_arabic_script_letters": 203
     },
     {
       "path": "public/data/groups/law.json",
@@ -205,13 +205,12 @@
       "path": "public/data/groups/learn-english.json",
       "sha256": "a6ff124e977a4c2eb76b7c0a401c4138c7b45544b28e2a30f67f39344ddcfc85",
       "entries": 3223,
-      "no_persian_script": 4
+      "no_arabic_script_letters": 4
     },
     {
       "path": "public/data/groups/management-1.json",
       "sha256": "1ab4427790a7058d37fc3d00bf5781e97eae6c8b40c7d188d830e6612431aaad",
-      "entries": 1476,
-      "no_persian_script": 259
+      "entries": 1476
     },
     {
       "path": "public/data/groups/management-2.json",
@@ -222,7 +221,7 @@
       "path": "public/data/groups/math.json",
       "sha256": "b4c1d7356b3d96f20d4eb1c153b02d028719a22aafdf676352682819d4220af6",
       "entries": 23629,
-      "no_persian_script": 3
+      "no_arabic_script_letters": 3
     },
     {
       "path": "public/data/groups/medicinal-plants.json",
@@ -233,19 +232,19 @@
       "path": "public/data/groups/modem-errors.json",
       "sha256": "8e76ff4e704d0a299e63074786371306bdcd26db4fce22b5f5eb49da62e69757",
       "entries": 332,
-      "no_persian_script": 9
+      "no_arabic_script_letters": 9
     },
     {
       "path": "public/data/groups/petroleum-1.json",
       "sha256": "a734ebded7668a9c898d8c523acf460d4f86ed6178ef77301bc2243aaa969414",
       "entries": 4696,
-      "no_persian_script": 2
+      "no_arabic_script_letters": 2
     },
     {
       "path": "public/data/groups/petroleum-2.json",
       "sha256": "6c1701188610bc587b426599a5c763211cbed728d66b084d4367890c29d89c55",
       "entries": 3283,
-      "no_persian_script": 1597
+      "no_arabic_script_letters": 1597
     },
     {
       "path": "public/data/groups/phobia.json",
@@ -256,13 +255,13 @@
       "path": "public/data/groups/polymer.json",
       "sha256": "61a51ff78c6fa22851b467e0bbb831b841bcbec536c86fd577c2b2263bb39d3a",
       "entries": 4108,
-      "no_persian_script": 1
+      "no_arabic_script_letters": 1
     },
     {
       "path": "public/data/groups/science-1.json",
       "sha256": "bb498893d55fb071e441ac4f08462aa367fa08beb0fe65a352b282cafd65dada",
       "entries": 7470,
-      "no_persian_script": 6
+      "no_arabic_script_letters": 6
     },
     {
       "path": "public/data/groups/science-2.json",
@@ -278,7 +277,7 @@
       "path": "public/data/groups/statistics-1.json",
       "sha256": "b724b89609c28436b18c9229e1cb48ac3ae716ac548e5c3c038880809e9b5bf1",
       "entries": 5333,
-      "no_persian_script": 2
+      "no_arabic_script_letters": 2
     },
     {
       "path": "public/data/groups/statistics-2.json",
@@ -294,7 +293,7 @@
       "path": "public/data/groups/vb.json",
       "sha256": "0f172c76ba285b159d4c7887e7d1a4266b434d9044221a7e128988ad99bd8d62",
       "entries": 1015,
-      "no_persian_script": 64
+      "no_arabic_script_letters": 64
     }
   ]
 }
