@@ -15,7 +15,7 @@
 
 ## اجرا
 
-Flutter stable و Java 17 لازم است. CI فایل‌های Android و Web را در پوشه موقت تولید می‌کند و فقط پوشه‌های پلتفرمیِ موجودنبوده را کپی می‌کند. برای توسعه محلی نیز پوشه‌های پلتفرمی را با همین شناسه بسازید:
+Flutter stable و Java 21 لازم است. CI فایل‌های Android و Web را در پوشه موقت تولید می‌کند و فقط پوشه‌های پلتفرمیِ موجودنبوده را کپی می‌کند. برای توسعه محلی نیز پوشه‌های پلتفرمی را با همین شناسه بسازید:
 
 ```sh
 flutter create --no-pub --platforms=android,web --project-name lango --org ir.lango /tmp/lango-scaffold
